@@ -3,7 +3,7 @@ from argparse import Namespace
 from datetime import datetime
 
 from caelestia.utils.notify import notify
-from caelestia.utils.paths import screenshots_cache_dir, screenshots_dir
+from caelestia.utils.paths import screenshots_dir
 
 
 class Command:
@@ -37,8 +37,8 @@ class Command:
 
         subprocess.run(["wl-copy"], input=sc_data)
 
-        dest = screenshots_cache_dir / datetime.now().strftime("%Y%m%d%H%M%S")
-        screenshots_cache_dir.mkdir(exist_ok=True, parents=True)
+        dest = screenshots_dir / f"{datetime.now().strftime('%Y%m%d%H%M%S')}.png"
+        screenshots_dir.mkdir(exist_ok=True, parents=True)
         dest.write_bytes(sc_data)
 
         action = notify(
@@ -47,15 +47,9 @@ class Command:
             "-h",
             f"STRING:image-path:{dest}",
             "--action=open=Open",
-            "--action=save=Save",
             "Screenshot taken",
-            f"Screenshot stored in {dest} and copied to clipboard",
+            f"Screenshot saved to {dest} and copied to clipboard",
         )
 
         if action == "open":
             subprocess.Popen(["swappy", "-f", dest], start_new_session=True)
-        elif action == "save":
-            new_dest = (screenshots_dir / dest.name).with_suffix(".png")
-            new_dest.parent.mkdir(exist_ok=True, parents=True)
-            dest.rename(new_dest)
-            notify("Screenshot saved", f"Saved to {new_dest}")
